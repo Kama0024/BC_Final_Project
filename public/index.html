@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized Marketplace</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Decentralized Marketplace</h1>
+        <button id="logoutBtn">Logout</button>
+    </header>
+    <main>
+        <section id="wallet">
+            <h2>Connect Your Wallet</h2>
+            <button id="connectWalletBtn">Connect Wallet</button>
+            <p id="walletStatus">Wallet Status: Not Connected</p>
+        </section>
+        <section id="itemListing">
+            <h2>List an Item</h2>
+            <form id="listItemForm">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required><br>
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" required></textarea><br>
+                <label for="price">Price (in ETH):</label>
+                <input type="number" id="price" name="price" step="0.01" min="0.01" required><br>
+                <button type="submit">List Item</button>
+            </form>
+        </section>
+        <section id="itemListing">
+            <h2>Available Items</h2>
+            <div id="itemsList">
+                
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Decentralized Marketplace</p>
+    </footer>
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"></script>
+    <script src="client.js"></script>
+    <script>
+        // Add event listener to logout button
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            // Redirect to login.html
+            window.location.href = 'login.html';
+        });
+
+        async function fetchAndRenderItems() {
+            const response = await fetch('/products');
+            const items = await response.json();
+            const itemsList = document.getElementById('itemsList');
+            itemsList.innerHTML = '';
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.innerHTML = `<p>Title: ${item.title}</p><p>Description: ${item.description}</p><p>Price: ${item.price} ETH</p>`;
+                itemsList.appendChild(itemElement);
+            });
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const newItem = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                price: formData.get('price')
+            };
+            const response = await fetch('/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newItem)
+            });
+            if (response.ok) {
+                console.log('Item listed successfully');
+                fetchAndRenderItems();
+            } else {
+                console.error('Failed to list item');
+            }
+        }
+
+        // Event listener for form submission
+        document.getElementById('listItemForm').addEventListener('submit', handleSubmit);
+
+        fetchAndRenderItems();
+    </script>
+</body>
+</html>
