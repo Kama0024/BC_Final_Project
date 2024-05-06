@@ -1,12 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const path = require('path');
+const cors = require('cors'); // Import CORS middleware
 const app = express();
 
-// Middleware
-app.use(express.static(path.join(__dirname, 'public'))); 
-app.use(bodyParser.json());
+// Use CORS middleware
+app.use(cors());
 
+app.use(express.static(__dirname)); 
+
+app.use(bodyParser.json());
 
 let items = [];
 let users = [];
@@ -52,10 +54,11 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5001;
 const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     console.log(`Navigate to http://localhost:${PORT}/ in your browser.`);
 });
 
-module.exports = server;
+// Export app and items array for testing
+module.exports = { app, items };

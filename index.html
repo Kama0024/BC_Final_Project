@@ -35,6 +35,14 @@
                 
             </div>
         </section>
+        <section id="transactions">
+            <h2>Transactions</h2>
+            <ul id="transactionsList">
+                
+                <li>Buy: iPhone 13 Pro Max</li>
+                <li>Sell: MacBook Pro 16-inch M1 Pro</li>
+            </ul>
+        </section>
     </main>
     <footer>
         <p>&copy; 2024 Decentralized Marketplace</p>
@@ -43,20 +51,34 @@
     <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"></script>
     <script src="client.js"></script>
     <script>
-        // Add event listener to logout button
         document.getElementById('logoutBtn').addEventListener('click', function() {
             // Redirect to login.html
             window.location.href = 'login.html';
         });
 
         async function fetchAndRenderItems() {
-            const response = await fetch('/products');
-            const items = await response.json();
+            try {
+                const response = await fetch('/products');
+                const items = await response.json();
+                renderItems(items);
+            } catch (error) {
+                console.error('Error fetching items:', error);
+            }
+        }
+
+        function renderItems(items) {
             const itemsList = document.getElementById('itemsList');
             itemsList.innerHTML = '';
             items.forEach(item => {
                 const itemElement = document.createElement('div');
-                itemElement.innerHTML = `<p>Title: ${item.title}</p><p>Description: ${item.description}</p><p>Price: ${item.price} ETH</p>`;
+                itemElement.className = 'product';
+                itemElement.innerHTML = `
+                    <p>Title: ${item.title}</p>
+                    <p>Description: ${item.description}</p>
+                    <p>Price: ${item.price} ETH</p>
+                    <button onclick="buyItem('${item.title}', ${item.price})">Buy</button>
+                    <button onclick="sellItem('${item.title}', ${item.price})">Sell</button>
+                `;
                 itemsList.appendChild(itemElement);
             });
         }
@@ -69,18 +91,22 @@
                 description: formData.get('description'),
                 price: formData.get('price')
             };
-            const response = await fetch('/products', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newItem)
-            });
-            if (response.ok) {
-                console.log('Item listed successfully');
-                fetchAndRenderItems();
-            } else {
-                console.error('Failed to list item');
+            try {
+                const response = await fetch('/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newItem)
+                });
+                if (response.ok) {
+                    console.log('Item listed successfully:', newItem);
+                    fetchAndRenderItems(); // Refresh items list
+                } else {
+                    console.error('Failed to list item:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error listing item:', error);
             }
         }
 
@@ -88,6 +114,24 @@
         document.getElementById('listItemForm').addEventListener('submit', handleSubmit);
 
         fetchAndRenderItems();
+
+        function buyItem(itemName, price) {
+            const transaction = `Buy: ${itemName}`;
+            const transactionsList = document.getElementById('transactionsList');
+            const transactionItem = document.createElement('li');
+            transactionItem.textContent = transaction;
+            transactionsList.appendChild(transactionItem);
+            alert(`You bought ${itemName} for ${price} ETH`);
+        }
+
+        function sellItem(itemName, price) {
+            const transaction = `Sell: ${itemName}`;
+            const transactionsList = document.getElementById('transactionsList');
+            const transactionItem = document.createElement('li');
+            transactionItem.textContent = transaction;
+            transactionsList.appendChild(transactionItem);
+            alert(`You sold ${itemName} for ${price} ETH`);
+        }
     </script>
 </body>
 </html>
